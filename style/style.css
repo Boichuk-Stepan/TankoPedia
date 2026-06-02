@@ -854,3 +854,15 @@ label:has(input:checked)::before {
         width: 110px;
     }
 }
+@font-face {
+    font-family: 'Special Elite';
+    src: url('../font/SpecialElite-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Black Ops One';
+    src: url('../font/BlackOpsOne-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
