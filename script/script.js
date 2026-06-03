@@ -1,12 +1,3 @@
-function myFunction() {
-    var x = document.getElementById("myLinks");
-    if (x.style.display === "block") {
-        x.style.display = "none";
-    } else {
-        x.style.display = "block";
-    }
-}
-
 // SEARCH
 
 // Чекаємо, поки користувач почне писати в полі пошуку
@@ -31,41 +22,70 @@ document.getElementById('tankSearch').addEventListener('input', function () {
     });
 })
 
-// FILTER
+//FILTER
 
-// Додаємо кожній галочці "слухача"
-document.querySelectorAll('.country').forEach(box => {
-    box.addEventListener('change', runFilter);
-});
-document.querySelectorAll('.type').forEach(box => {
-    box.addEventListener('change', runFilter);
-});
+// --- 1. Функція для оновлення стану та збереження в localStorage ---
 function runFilter() {
-    // 1. Збираємо вибрані країни
-    const activeCountries = Array.from(document.querySelectorAll('.country:checked'))
-        .map(box => box.value);
+    const activeCountries = Array.from(document.querySelectorAll('.country:checked')).map(box => box.value);
+    const activeTypes = Array.from(document.querySelectorAll('.type:checked')).map(box => box.value);
 
-    // 2. Збираємо вибрані типи
-    const activeTypes = Array.from(document.querySelectorAll('.type:checked'))
-        .map(box => box.value);
+    // Зберігаємо стан в localStorage
+    localStorage.setItem('filterCountries', JSON.stringify(activeCountries));
+    localStorage.setItem('filterTypes', JSON.stringify(activeTypes));
 
     const cards = document.querySelectorAll('.cont');
-
     cards.forEach(card => {
-        // Перевіряємо країну: чи підходить картка під вибрані країни?
-        // Якщо країни не вибрані, то вважаємо, що підходять усі (true)
-        const matchCountry = activeCountries.length === 0 ||
-            activeCountries.some(c => card.classList.contains(c));
+        const matchCountry = activeCountries.length === 0 || activeCountries.some(c => card.classList.contains(c));
+        const matchType = activeTypes.length === 0 || activeTypes.some(t => card.classList.contains(t));
 
-        // Перевіряємо тип: чи підходить картка під вибрані типи?
-        const matchType = activeTypes.length === 0 ||
-            activeTypes.some(t => card.classList.contains(t));
-
-        // Танк видимий тільки якщо ВІН ПІДХОДИТЬ І ЗА КРАЇНОЮ, І ЗА ТИПОМ
-        if (matchCountry && matchType) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
+        card.style.display = (matchCountry && matchType) ? 'block' : 'none';
     });
+}
+
+// --- 2. Функція відновлення при завантаженні ---
+function restoreFilters() {
+    const savedCountries = JSON.parse(localStorage.getItem('filterCountries') || '[]');
+    const savedTypes = JSON.parse(localStorage.getItem('filterTypes') || '[]');
+
+    // Відмічаємо галочки
+    savedCountries.forEach(val => {
+        const box = document.querySelector(`.country[value="${val}"]`);
+        if (box) box.checked = true;
+    });
+    savedTypes.forEach(val => {
+        const box = document.querySelector(`.type[value="${val}"]`);
+        if (box) box.checked = true;
+    });
+
+    // Запускаємо фільтрацію, щоб застосувати видимість
+    if (savedCountries.length > 0 || savedTypes.length > 0) {
+        runFilter();
+    }
+}
+
+// --- 3. Ініціалізація ---
+document.querySelectorAll('.country, .type').forEach(box => {
+    box.addEventListener('change', runFilter);
+});
+
+// Запускаємо відновлення при старті
+document.addEventListener('DOMContentLoaded', restoreFilters);
+
+//RESET
+
+function resetFilters() {
+    // 1. Очищаємо пам'ять
+    localStorage.clear(); 
+    
+    // 2. Скидаємо всі чекбокси
+    document.querySelectorAll('input:checked').forEach(box => box.checked = false);
+    
+    // 3. Скидаємо поле пошуку
+    const searchInput = document.getElementById('tankSearch');
+    if (searchInput) {
+        searchInput.value = ''; 
+    }
+    
+    // 4. Оновлюємо вигляд (перезапускаємо фільтрацію)
+    runFilter(); 
 }
